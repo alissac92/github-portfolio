@@ -1,11 +1,6 @@
 # github-portfolio
 
-This Python program takes stock data from COSTCO and S&P-500 
-from 2016-2020 and creates training and testing data frames 
-to create predictive model for stock return performance
+This is a portfoilio of my data analysis projects utilizing R, Python, and SQL.
 
-This program was created as a graduate assignment for
-'Data Science with Python' at Boston University.
+These projects are for portfolio demonstration purposes only and should not be copied or used without permission.
 
-This program is published as a portfolio sample only,
-and should not be copied or used without permission.
