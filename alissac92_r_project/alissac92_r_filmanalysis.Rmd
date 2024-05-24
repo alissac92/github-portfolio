@@ -34,7 +34,7 @@ library(sampling)
 library(prob)
 
 getwd()
-setwd("/Users/alissacrist/Documents/GitHub/github-portfolio/CS544Final_Crist/")
+setwd("/Users/alissacrist/Documents/GitHub/github-portfolio/alissac92_r_project")
 
 #Import Datasets
 gameAdaptations <- read.csv("video_game_films.csv")
