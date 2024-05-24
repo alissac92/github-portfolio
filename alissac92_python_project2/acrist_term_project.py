@@ -1,8 +1,5 @@
 """ 
 Alissa Crist
-Class: CS 677 
-Date: 12/19/2023
-Term Project
 Description of Problem:
 This program takes a fictional, anonymized dataset of credit
 card transactions and implements various classification models

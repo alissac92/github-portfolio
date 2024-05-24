@@ -1,0 +1,472 @@
+---
+title: "Video Game Adaptations in Film / TV"
+author: "Alissa Crist"
+output:
+  html_document:
+    fig_width: 8
+    code_folding: hide
+    highlight: tango
+    toc: true
+    toc_float:
+      collapsed: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(fig.width=8, fig.height=4,
+                      echo=FALSE, warning=FALSE, message=FALSE)
+```
+
+# Are Video Games the New IP Frontier for Film & TV?
+
+The following report analyzes data of top-grossing feature films that have been adapted from video games, top-selling video game data, and an analysis of rumored/upcoming video game IP (Intellectual Property) projects in development at various entertainment studios.
+
+This analysis is designed to test the theory that video games as movies and TV shows are quickly becoming the next big Entertainment Industry trend, possibly moving to unseat the Superhero genre as a top-performer for adapted feature films and shows.
+
+## Game Adaptations Dataset
+
+The following data shows the Titles, Release Dates, and Gross Worldwide Box Office Sales of the top 42 grossing Video Game Feature Film Adaptations since 1993.
+
+```{r , echo=TRUE}
+options(scipen = 999)
+library(plotly)
+library(tidyverse)
+library(sampling)
+library(prob)
+
+getwd()
+setwd("/Users/alissacrist/Documents/GitHub/github-portfolio/CS544Final_Crist/")
+
+#Import Datasets
+gameAdaptations <- read.csv("video_game_films.csv")
+bestSellingGames <- read.csv("best_selling_games.csv")
+upcomingGameAdapt <- read.csv("upcoming_game_adaptations.csv")
+
+df <- gameAdaptations
+df.name <- gameAdaptations$Title
+
+df2 <- bestSellingGames
+df2.name <- bestSellingGames$Title
+
+df3 <- upcomingGameAdapt
+df3.name <- upcomingGameAdapt$Title
+
+plot_ly(df, 
+        x = ~RelDate,
+        y = ~WWBO,
+        text = ~Title,
+        color = ~Distributor, 
+        colors = ("Spectral"),
+        type = 'scatter', 
+        mode = 'markers',
+        marker = list(size = ~WWBO*0.0000003, opacity = 0.5)) %>%
+  layout(title = '<b>Top-Grossing Game Adaptations (Film) by Distributor</b>',
+         xaxis = list(showgrid = FALSE, title = "Release Date"),
+         yaxis = list(showgrid = FALSE, title = "Worldwide Box Office (USD)"),
+         legend = list(title=list(text='<b> Distributors </b>')))
+```
+
+## Top-Performing Film Titles by Game Publisher
+
+This overlaid histogram shows the number of top-selling game titles as well as film adaptation titles broken down by Game Publisher.
+
+```{r Top Titles by Game Pub, echo=TRUE}
+#Do the analysis as in Module3 for at least one categorical variable and at 
+#least one numerical variable. Show appropriate plots for your data.
+
+library(plotly)
+
+#Categorical Variable
+fig <- plot_ly(alpha = 0.6)
+fig <- fig %>% add_histogram(x = ~df$GamePub, 
+                             name = "Game Adaptations (Film)")
+fig <- fig %>% add_histogram(x = ~df2$GamePub,
+                             name = "Top Selling Games")
+fig <- fig %>% layout(barmode = "overlay")
+fig <- fig %>% layout(title = "<b># of Top-Performing Titles by Game Publisher</b>",
+                      xaxis = list(title = "Game Publisher"),
+                      yaxis = list(title = "# of Titles"),
+                      legend = list(title=list(text='<b> Legend </b>')))
+                      
+fig
+```
+
+### Findings
+
+This chart shows that Nintendo is clearly leading the game industry with the highest number of top-performing titles, but it's film adaptations are fairly low compared to some other game publishers.
+
+For example: While Capcom and Ubisoft may not have as many top-performing titles in terms of units sold, their games are commonly adapted for film & television.\
+\
+This could mean that a game's sales performance may *not* be a major deciding factor when a studio is looking for material to adapt.
+
+## Are Games Adapted Based on Popularity (Sales), or Other Factors?
+
+To further test the theory that a video game's commercial success does not necessarily mean it will be adapted for Film & TV, I pulled data for the top-selling games (units sold), and searched to see if there were any past, present, or future plans to develop that title into a film. Here were my findings:
+
+```{r echo = TRUE}
+library(plotly)
+
+fig2 <- plot_ly(data = df2, x = ~Title, y = ~Sales, color = ~Movie, type = "bar")
+fig2 <- fig2 %>% layout(title = "<b>Top-Selling Games - Have They Been Adapted?</b>",
+                      xaxis = list(title = "Title",
+                                   categoryorder = "total ascending"),
+                      yaxis = list(title = "Sales (units)"),
+                      legend = list(title=list(text='<b>Adaptation Status</b>')))
+
+fig2
+
+```
+
+### Findings
+
+As the chart shows, there are current or rumored plans to adapt many video game titles for Film & Television, but those plans do not directly correlate with the game's sales performance.
+
+For example: A top-moving title like *Grand Theft Auto* has yet to be adapted (though I suspect we'll see something on the horizon soon!).
+
+Other titles such as *Wii Sports* or *Kinect Adventures!* may lack the story elements needed to be developed into a script for narrative entertainment.
+
+# Box Plot Analysis: Video Game Adaptation Box Office by Decade
+
+As gaming technology becomes more advanced and game storytelling more sophisticated (think *Pac-Man* vs. *The Last of Us*), are video game adaptations performing better at the box office?
+
+Let's take a look at the 90s, 2000s, and today:
+
+```{r echo = TRUE}
+library(plotly)
+
+#Numerical Variable
+
+#Creating 3 Subgroups of Worldwide Box office by Decade (Release Dates)
+
+df_sort <- sort(df$RelDate, decreasing = FALSE)
+
+#1993 - 2003
+nineties.dates <- (df_sort[1:10])
+nineties <- subset(df, df$RelDate %in% nineties.dates)
+
+#2004 - 2014
+y2k.dates <- (df_sort[11:28])
+y2k <- subset(df, df$RelDate %in% y2k.dates)
+
+#2014 - today
+y2k10s.dates <- (df_sort[29:42])
+y2k10s <- subset(df, df$RelDate %in% y2k10s.dates)
+
+#90s (1993 - 2003) Mean and SD
+ninetiesMeanSales <- sprintf("$%.2f", mean(nineties$WWBO))
+ninetiesSD <- sd(nineties$WWBO)
+
+#2000s (2004 - 2014) Mean and SD
+y2kMeanSales <- sprintf("$%.2f", mean(y2k$WWBO))
+y2kSD <- sd(y2k$WWBO)
+
+
+#2010s (2014 - today) Mean and SD
+y2k10sMeanSales <- sprintf("$%.2f", mean(y2k10s$WWBO))
+y2k10sSD <- sd(y2k10s$WWBO)
+
+p <- plot_ly(nineties, x = ~WWBO, type="box", name = '90s') %>%
+  add_trace(y2k, x = y2k$WWBO, type="box", name = '2000s') %>%
+  add_trace(y2k10s, x = y2k10s$WWBO, type="box", name = '2010s') %>%
+  layout(title = "<b>Game Adaptation WWBO Sales by Decade</b>",
+         xaxis = list(title = "Worldwide Box Office (USD)"),
+         yaxis = list(title = "Decade"),
+         legend = list(title=list(text="<b>Decade</b>")))
+p
+
+```
+
+### Findings
+
+The box plots show a clear growth in Box Office performance throughout each decade, but also greater variance in the data. Could this be because studios are taking more risks with the game titles they choose to adapt?
+
+# What Other Factors Impact the Success of a Game Adaptation at the Box Office?
+
+One factor I chose to take a look at was the Rotten Tomato ratings for each of the top-grossing game adaptations, and see how they correlated with box office performance:
+
+```{r echo = TRUE}
+library(plotly)
+
+rt_ratings <- plot_ly(df, 
+        x = ~RottenTomatoes,
+        y = ~WWBO,
+        text = ~Title,
+        color = ~RottenTomatoes, 
+        colors = ("Spectral"),
+        type = 'scatter', 
+        mode = 'markers') %>%
+  layout(title = '<b>Rotten Tomato Ratings vs. Box Office Sales</b>',
+         xaxis = list(showgrid = FALSE, title = "Rotten Tomatoes Rating"),
+         yaxis = list(showgrid = FALSE, title = "Worldwide Box Office (USD)"))
+
+rt_ratings
+
+```
+
+It appears the critic does count, in the case of influencing movie-goers to take a chance on video game adaptations at the theater.
+
+## Central Limit Theorem and Sampling
+
+To test the Central Limit Theorem on the average Rotten Tomatoes ratings for the top-grossing video game adaptations, I first calculated the total mean and standard deviation of all Rotten Tomato ratings in my top-grossing game adaptations dataset.
+
+```{r echo = TRUE}
+#Draw various random samples of the data and show the applicability of the 
+#Central Limit Theorem for this variable.
+
+#Ratings Data
+
+#Rotten Tomatoes - Cumulative Mean/SD
+rottenMean <- round(mean(df$RottenTomatoes), digits = 2)
+rottenSD <- round(sd(df$RottenTomatoes), digits = 2)
+
+paste("Population Mean:", rottenMean, "Population SD:",rottenSD)
+
+hist(df$RottenTomatoes,
+     main = "Game Adaptation Rotten Tomatoes Scores",
+     xlab = "Rotten Tomatoes Score",
+     col = "#6ac476",
+     border = "white",
+     ylim = c(0,20),
+     xlim = c(0,100),
+     breaks = seq(0,100,10))
+
+```
+
+### Sampling
+
+Then, I drew samples of sizes 4, 8, and 12 to see the comparison:
+
+```{r echo = TRUE}
+### SAMPLING - ROTTEN TOMATOES ###
+
+#Sample Size: 4
+set.seed(92)
+
+samples <- 20
+sample.size <- 4
+
+xbar <- numeric(samples)
+
+for (i in 1: samples) {
+  xbar[i] <- mean(sample(df$RottenTomatoes, sample.size, replace = FALSE))
+}
+
+
+hist(xbar, 
+     prob = TRUE, 
+     main = "Rotten Tomatoes - Sample Size: 4", 
+     xlab = "Rotten Tomatoes Score",
+     col = "#f5a453",
+     border = "white",
+     breaks = 4, 
+    xlim=c(0,100), ylim=c(0,0.1))
+
+rottenSampleMean1 <- round(mean(xbar), digits = 2)
+rottenSampleSD1 <- round(sd(xbar), digits = 2)
+paste("Sample Size 4 Mean:", rottenSampleMean1, "Sample Size 4 SD:",rottenSampleSD1)
+
+
+#Sample Size: 8
+set.seed(92)
+
+samples <- 20
+sample.size <- 8
+
+xbar <- numeric(samples)
+
+for (i in 1: samples) {
+  xbar[i] <- mean(sample(df$RottenTomatoes, sample.size, replace = FALSE))
+}
+
+
+rottenSampleMean2 <- round(mean(xbar), digits = 2)
+rottenSampleSD2 <- round(sd(xbar), digits = 2)
+paste("Sample Size 8 Mean:", rottenSampleMean2, "Sample Size 8 SD:",rottenSampleSD2)
+
+
+hist(xbar, 
+     prob = TRUE, 
+     main = "Rotten Tomatoes - Sample Size: 8", 
+     xlab = "Rotten Tomatoes Score",
+     col = "#fcf22d",
+     border = "white",
+     breaks = 4, 
+     xlim=c(0,100), ylim=c(0,0.1))
+
+#Sample Size: 12
+set.seed(92)
+
+samples <- 20
+sample.size <- 12
+
+xbar <- numeric(samples)
+
+for (i in 1: samples) {
+  xbar[i] <- mean(sample(df$RottenTomatoes, sample.size, replace = FALSE))
+}
+
+
+rottenSampleMean3 <- round(mean(xbar), digits = 2)
+rottenSampleSD3 <- round(sd(xbar), digits = 2)
+paste("Sample Size 12 Mean:", rottenSampleMean3, "Sample Size 12 SD:",rottenSampleSD3)
+
+
+hist(xbar, 
+     prob = TRUE, 
+     main = "Rotten Tomatoes - Sample Size: 12", 
+     xlab = "Rotten Tomatoes Score",
+     col = "#f39dfc",
+     border = "white",
+     breaks = 4, 
+     xlim=c(0,100), ylim=c(0,0.1))
+
+```
+
+#### Findings
+
+The means of all the sample sizes were about the same as the population size, but the standard deviations shrank as the sample size grew.
+
+### Sampling Methods
+
+To test sampling methods, I used the simple random sampling with replacement method, and the systematic sampling method. Here were the results:
+
+```{r echo = TRUE}
+### RANDOM SAMPLING METHODS - ROTTEN TOMATOES ###
+
+library(sampling)
+library(prob)
+
+#srswr
+
+set.seed(92)
+
+s <- srswr(20, nrow(df))
+s[s != 0]
+
+rows <- (1:nrow(df))[s!=0]
+rows <- rep(rows, s[s != 0])
+
+sample.a <- df[rows, ]
+
+prop.table(table(sample.a$RottenTomatoes))*100
+
+hist(sample.a$RottenTomatoes,
+     prob = TRUE, 
+     main = "Simple Random Sampling WR", 
+     xlab = "Rotten Tomatoes Score",
+     col = "#2abdbf",
+     border = "white",
+     breaks = 6, 
+     xlim=c(0,100), ylim=c(0,0.04))
+     
+#systematic
+
+set.seed(92)
+
+pik <- inclusionprobabilities(
+  df$RottenTomatoes, 20)
+length(pik)
+
+sum(pik)
+
+s1 <- UPsystematic(pik)
+
+sample.b <- df[s1 != 0, ]
+
+prop.table(table(sample.b$RottenTomatoes))*100
+
+hist(sample.b$RottenTomatoes,
+     prob = TRUE, 
+     main = "Systematic Sampling", 
+     xlab = "Rotten Tomatoes Score",
+     col = "#2583a8",
+     border = "white",
+     breaks = 6, 
+     xlim=c(0,100), ylim=c(0,0.04))
+
+```
+
+#### Findings
+
+I found these sampling methods to be less correlated with one another and with the population size. This could be due to the smaller size of the population data.
+
+## Does the time of year make a difference?
+
+In addition to studying the correlation between critical reception and box office performance, I also wanted to look into the month that a title releases, both as a game title and as an adapted film. Here's what I found:
+
+```{r echo = TRUE}
+library(plotly)
+
+#Game Adaptations - Releases by Month
+fig6 <- plot_ly(
+  df,
+  type='histogram',
+  x=factor(df$RelMonth, levels = month.name),
+  color=factor(df$RelMonth, levels = month.name)) %>%
+  
+  layout(title = "<b>Top-Grossing Game Adaptations by Month Released</b>",
+         yaxis = list(title = "# of Films"),
+         legend = list(title=list(text='<b> Release Month </b>')))
+
+fig6
+
+#Top Games by Month Released
+fig7 <- plot_ly(
+  df2,
+  type='histogram',
+  x=factor(df2$RelMonth, levels = month.name),
+  color=factor(df2$RelMonth, levels = month.name)) %>%
+  
+  layout(title = "<b>Top-Selling Games by Month Released</b>",
+         yaxis = list(title = "# of Games"),
+         legend = list(title=list(text='<b> Release Month </b>')))
+
+fig7
+
+```
+
+### Findings
+
+From these charts, it appears the months of September - December are hot for both game and film adaptation releases, with game releases focusing much heavier on the Fall in anticipation of Holiday video game gifting.
+
+Film adaptations seem to be farily spread throughout the year, with (perhaps surprisingly) the fewest adapted titles releasing in July.
+
+# Which Studios are Jumping on the Video Game Trend?
+
+I pulled data from this article on Den of Geek (<https://www.denofgeek.com/games/every-video-game-adaptation-currently-in-development/>) to see which studios are currently adapting the most video game titles for film & television. Here's what I found:
+
+```{r echo = TRUE}
+library(plotly)
+
+fig5 <- plot_ly(
+  df3,
+  type='histogram',
+  x=~Distributor,
+  color=~Format) %>%
+  
+layout(title = "<b>Upcoming Game Adaptations by Distributor</b>",
+       yaxis = list(title = "# of Upcoming Projects"),
+       legend = list(title=list(text='<b> Format </b>')))
+
+fig5
+
+```
+
+### Findings
+
+Netflix and Amazon Studios are clearly making a big investment in adapting video game IP for their OTT streaming platforms. On the theatrical side, Warner Bros., Sony, and Lionsgate appear to be equally vested in the genre for big-screen adaptations.
+
+# Conclusions
+
+With the commercial success of video game adaptations such as *Uncharted* or *The Last of Us*, and as video games become more like interactive films as technology evolves, it seems fitting that the entertainment industry would turn toward the video game industry as its next IP honey-hole.
+
+Will a video game adaptation ever cross \$500m at the worldwide box office? I'll be keeping my eyes on Universal's *The Super Mario Bros. Movie*, set to release on April 5th. Could *Mario* take the box office throne from Marvel and DC?
+
+One thing is clear: The lines that separate mediums (film, TV, streaming, video games, books, etc.) may fade, but the thread that connects them all is story. Great characters, stories, and worlds will always be in-demand via any medium.
+
+# Sources
+
+Dataset: "Film Adaptations of Video Games" - <https://www.kaggle.com/datasets/bcruise/film-adaptations-of-video-games>
+
+Dataset: "Top 50 Video Games" - <https://www.kaggle.com/datasets/devrimtuner/top-100-video-games>
+
+Data: "Every Video Game Adaptation Currently in Development", DenofGeek.com, January 3, 2023 - <https://www.denofgeek.com/games/every-video-game-adaptation-currently-in-development/>

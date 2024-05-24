@@ -1,6 +1,5 @@
 """ 
 Alissa Crist
-Date: 10/3/2023
 Description of Problem: 
 This program takes stock data from COSTCO and S&P-500 and 
 creates training and testing data frames to create a predictive model 
